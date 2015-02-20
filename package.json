@@ -7,7 +7,8 @@
   "scripts": {
   },
   "dependencies": {
-    "JSONStream": ">=0.10.0"
+    "JSONStream": ">=0.10.0",
+    "lodash": ">=3.3.0"
   },
   "devDependencies": {
   },
