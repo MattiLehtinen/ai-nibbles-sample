@@ -10,7 +10,9 @@ var name = process.argv[4] + crypto.randomBytes(2).toString('hex');
 
 var width = null,
     height = null,
-    playerNo = null;
+    playerNo = null,
+    appleX = -1,
+    appleY = -1;
 
 console.log("I'm", name, "and connect to", serverHost + ":" + serverPort);
 
@@ -52,12 +54,21 @@ jsonStream.on('data', function(data) {
         var snake = data.data[playerNo];
         var x = snake.body[0][0];
         var y = snake.body[0][1];
-        var direction = snake.direction;
-        console.log(x + ", " + y + " | " + direction);
-        if(x <= 5 && direction == 3) send({msg: 'control', data: {direction: 1}});
-        if(x >= width-6 && direction == 4) send({msg: 'control', data: {direction: 2}});
-        if(y <= 6 && direction == 1) send({msg: 'control', data: {direction: 4}});
-        if(y >= height-6 && direction == 2) send({msg: 'control', data: {direction: 3}});
+
+        if(appleX !== -1) {
+            if(x < appleX)
+                send({msg: 'control', data: {direction: 4}});
+            else if( x > appleX)
+                send({msg: 'control', data: {direction: 3}});
+            else if( y < appleY)
+                send({msg: 'control', data: {direction: 2}});
+            else if( y > appleY)
+                send({msg: 'control', data: {direction: 1}});
+        }
+    } else if (data.msg === 'apple') {
+        appleX = data.data[0];
+        appleY = data.data[1];
+        console.log("Apple: " + appleX + ", " + appleY);
     }
 });
 
