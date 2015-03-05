@@ -1,10 +1,14 @@
 {
-  "name": "ai-nibbles-simple-sample",
-  "version": "0.0.1",
-  "description": "Simple sample snake for AI-Nibbles game",
+  "name": "ai-nibbles-sample",
+  "version": "0.1.0",
+  "description": "A simple sample snake for the AI-Nibbles programming game",
   "author": "Matti Lehtinen",
   "main": "app.js",
   "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:MattiLehtinen/ai-nibbles-sample.git"
   },
   "dependencies": {
     "JSONStream": ">=0.10.0",

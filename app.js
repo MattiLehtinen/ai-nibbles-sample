@@ -1,11 +1,12 @@
-var net = require("net"),
-    util = require('util'),
+var _ = require('lodash'),
+    net = require("net"),
     crypto = require('crypto'),
-    JSONStream = require('JSONStream'),
-    _ = require('lodash');
+    JSONStream = require('JSONStream');
 
 var serverHost = process.argv[2];
 var serverPort = process.argv[3];
+
+// Randomize name to be able to launch multiple instances of the same player
 var name = process.argv[4] + crypto.randomBytes(2).toString('hex');
 
 var width = null,
@@ -19,19 +20,9 @@ console.log("I'm", name, "and connect to", serverHost + ":" + serverPort);
 client = net.connect(serverPort, serverHost, function() {
     return send({
         msg: "join",
-        data: {
-            player: {
-                name: name
-            }
-        }
+        data: { player: { name: name } }
     });
 });
-
-function send(json) {
-    var jsonString = JSON.stringify(json);
-    console.log("SEND: " + jsonString);
-    return client.write(jsonString);
-}
 
 jsonStream = client.pipe(JSONStream.parse());
 
@@ -75,3 +66,9 @@ jsonStream.on('data', function(data) {
 jsonStream.on('error', function() {
     return console.log("disconnected");
 });
+
+function send(json) {
+    var jsonString = JSON.stringify(json);
+    console.log("SEND: " + jsonString);
+    return client.write(jsonString);
+}
