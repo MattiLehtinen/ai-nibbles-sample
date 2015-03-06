@@ -43,18 +43,35 @@ jsonStream.on('data', function(data) {
         console.log('Game ended');
     } else if (data.msg === 'positions') {
         var snake = data.data[playerNo];
+        var direction = snake.direction;
         var x = snake.body[0][0];
         var y = snake.body[0][1];
 
         if(appleX !== -1) {
-            if(x < appleX)
-                send({msg: 'control', data: {direction: 4}});
-            else if( x > appleX)
-                send({msg: 'control', data: {direction: 3}});
-            else if( y < appleY)
-                send({msg: 'control', data: {direction: 2}});
-            else if( y > appleY)
-                send({msg: 'control', data: {direction: 1}});
+            if(x < appleX) {
+                if(direction == 3)
+                    send({msg: 'control', data: {direction: 1}});
+                else
+                    send({msg: 'control', data: {direction: 4}});
+            }
+            else if( x > appleX) {
+                if(direction == 4)
+                    send({msg: 'control', data: {direction: 1}});
+                else
+                    send({msg: 'control', data: {direction: 3}});
+            }
+            else if( y < appleY) {
+                if(direction == 1)
+                    send({msg: 'control', data: {direction: 3}});
+                else
+                    send({msg: 'control', data: {direction: 2}});
+            }
+            else if( y > appleY) {
+                if(direction == 2)
+                    send({msg: 'control', data: {direction: 3}});
+                else
+                    send({msg: 'control', data: {direction: 1}});
+            }
         }
     } else if (data.msg === 'apple') {
         appleX = data.data[0];
