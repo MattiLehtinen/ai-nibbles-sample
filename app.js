@@ -42,7 +42,8 @@ jsonStream.on('data', function(data) {
     } else if (data.msg === 'end') {
         console.log('Game ended');
     } else if (data.msg === 'positions') {
-        var snake = data.data[playerNo];
+        var snakes = data.data.snakes;
+        var snake = snakes[playerNo];
         var direction = snake.direction;
         var x = snake.body[0][0];
         var y = snake.body[0][1];
