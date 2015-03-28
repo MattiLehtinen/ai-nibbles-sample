@@ -29,9 +29,9 @@ jsonStream = client.pipe(JSONStream.parse());
 jsonStream.on('data', function(data) {
     console.log(JSON.stringify(data));
 
-    if (data.msg === 'joined') {
+    if (data.msg === 'join') {
         console.log('Joined')
-    } else if (data.msg === 'created') {
+    } else if (data.msg === 'create') {
         console.log('Game created');
     } else if (data.msg === 'start') {
         console.log('Game start');
