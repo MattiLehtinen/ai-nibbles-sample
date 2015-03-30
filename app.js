@@ -9,15 +9,20 @@ var serverPort = process.argv[3];
 // Randomize name to be able to launch multiple instances of the same player
 var name = process.argv[4] + crypto.randomBytes(2).toString('hex');
 
-var width = null,
-    height = null,
-    playerNo = null,
+var dir = {
+    UP: 1,
+    DOWN: 2,
+    LEFT: 3,
+    RIGHT: 4
+};
+
+var playerNo = null,
     appleX = -1,
     appleY = -1;
 
-console.log("I'm", name, "and connect to", serverHost + ":" + serverPort);
-
 client = net.connect(serverPort, serverHost, function() {
+    console.log("I'm", name, "and connected to", serverHost + ":" + serverPort);
+
     return send({
         msg: "join",
         data: { player: { name: name } }
@@ -26,58 +31,63 @@ client = net.connect(serverPort, serverHost, function() {
 
 jsonStream = client.pipe(JSONStream.parse());
 
-jsonStream.on('data', function(data) {
-    console.log(JSON.stringify(data));
+jsonStream.on('data', function(packet) {
+    var msg = packet.msg;
+    var data = packet.data;
 
-    if (data.msg === 'join') {
-        console.log('Joined')
-    } else if (data.msg === 'create') {
-        console.log('Game created');
-    } else if (data.msg === 'start') {
-        console.log('Game start');
-        width = data.data.level.width;
-        height = data.data.level.height;
-        playerNo = _.findIndex(data.data.players, {name: name});
-        console.log("Width: " + width + ", height: " + height + ", I'm player " + (playerNo + 1));
-    } else if (data.msg === 'end') {
-        console.log('Game ended');
-    } else if (data.msg === 'positions') {
-        var snakes = data.data.snakes;
-        var snake = snakes[playerNo];
-        var direction = snake.direction;
-        var x = snake.body[0][0];
-        var y = snake.body[0][1];
+    switch (msg) {
+        case 'join':
+            console.log('Joined');
+            break;
+        case 'create':
+            console.log('Game created');
+            break;
+        case 'start':
+            console.log('Game start');
+            playerNo = _.findIndex(data.players, {name: name});
+            console.log("Width: " + data.level.width + ", height: " + data.level.height + ", I'm player " + (playerNo + 1));
+            break;
+        case 'end':
+            console.log('Game ended');
+            break;
+        case 'apple':
+            appleX = data[0];
+            appleY = data[1];
+            console.log("Apple: " + appleX + ", " + appleY);
+            break;
+        case 'positions':
+            var snake = data.snakes[playerNo];
+            var direction = snake.direction;
+            var x = snake.body[0][0];
+            var y = snake.body[0][1];
 
-        if(appleX !== -1) {
-            if(x < appleX) {
-                if(direction == 3)
-                    send({msg: 'control', data: {direction: 1}});
+            if (x < appleX) {
+                if (direction == dir.LEFT)
+                    control(dir.UP);
                 else
-                    send({msg: 'control', data: {direction: 4}});
+                    control(dir.RIGHT);
             }
-            else if( x > appleX) {
-                if(direction == 4)
-                    send({msg: 'control', data: {direction: 1}});
+            else if (x > appleX) {
+                if (direction == dir.RIGHT)
+                    control(dir.UP);
                 else
-                    send({msg: 'control', data: {direction: 3}});
+                    control(dir.LEFT);
             }
-            else if( y < appleY) {
-                if(direction == 1)
-                    send({msg: 'control', data: {direction: 3}});
+            else if (y < appleY) {
+                if (direction == dir.UP)
+                    control(dir.LEFT);
                 else
-                    send({msg: 'control', data: {direction: 2}});
+                    control(dir.DOWN);
             }
-            else if( y > appleY) {
-                if(direction == 2)
-                    send({msg: 'control', data: {direction: 3}});
+            else if (y > appleY) {
+                if (direction == dir.DOWN)
+                    control(dir.RIGHT);
                 else
-                    send({msg: 'control', data: {direction: 1}});
+                    control(dir.UP);
             }
-        }
-    } else if (data.msg === 'apple') {
-        appleX = data.data[0];
-        appleY = data.data[1];
-        console.log("Apple: " + appleX + ", " + appleY);
+            break;
+        default:
+            console.log("Unknown message: " + msg);
     }
 });
 
@@ -85,8 +95,11 @@ jsonStream.on('error', function() {
     return console.log("disconnected");
 });
 
+function control(direction) {
+    send({msg: 'control', data: {direction: direction}});
+}
+
 function send(json) {
     var jsonString = JSON.stringify(json);
-    console.log("SEND: " + jsonString);
     return client.write(jsonString);
 }
